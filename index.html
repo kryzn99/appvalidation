@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A photo diary you build with your friends</title>
+<meta name="description" content="A collaborative photo diary for you and your friends. No disappearing stories, no public feed — just what actually happened, saved for good.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F1E6;
+    --surface: #F1E7D6;
+    --brand: #CC8A2E;
+    --brand-deep: #A5711F;
+    --ink: #33261A;
+    --ink-soft: #5C4A38;
+    --red: #A8412C;
+    --line: #E0D0AE;
+    --cream-paper: #FBF7EE;
+
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Karla', sans-serif;
+    --font-stamp: 'Space Mono', monospace;
+
+    --max-w: 720px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* subtle paper grain texture over the whole page */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-stamp);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--red);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    line-height: 1.16;
+    letter-spacing: -0.01em;
+  }
+
+  em {
+    font-style: italic;
+    color: var(--brand-deep);
+  }
+
+  p { margin: 0 0 1em; color: var(--ink-soft); }
+  p:last-child { margin-bottom: 0; }
+
+  section {
+    position: relative;
+    z-index: 2;
+    padding: 88px 0;
+  }
+
+  section + section {
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- HEADER ---------- */
+  .site-header {
+    padding: 28px 0;
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .wordmark .dot { color: var(--red); }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding-top: 40px;
+    padding-bottom: 60px;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .hero h1 { margin-bottom: 20px; }
+  .hero .sub {
+    font-size: 1.08rem;
+    max-width: 46ch;
+  }
+
+  /* Polaroid stack illustration */
+  .stack {
+    position: relative;
+    height: 340px;
+  }
+
+  .polaroid {
+    position: absolute;
+    width: 178px;
+    background: var(--cream-paper);
+    padding: 10px 10px 34px;
+    border-radius: 3px;
+    box-shadow: 0 10px 24px rgba(51, 38, 26, 0.18), 0 2px 5px rgba(51, 38, 26, 0.1);
+  }
+
+  .polaroid .photo {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .polaroid .stamp {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-family: var(--font-stamp);
+    font-size: 10px;
+    color: #ff6a4d;
+    text-shadow: 0 0 4px rgba(0,0,0,0.4);
+    letter-spacing: 0.02em;
+  }
+
+  .polaroid .cap {
+    font-family: var(--font-stamp);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .p1 {
+    top: 4px; left: 8px;
+    transform: rotate(-7deg);
+    z-index: 1;
+  }
+  .p1 .photo { background: linear-gradient(140deg, #E7A857 0%, #C5713A 55%, #7C4A33 100%); }
+
+  .p2 {
+    top: 46px; left: 128px;
+    transform: rotate(4deg);
+    z-index: 2;
+  }
+  .p2 .photo { background: linear-gradient(150deg, #9FB9A8 0%, #5F7F6C 60%, #35473C 100%); }
+
+  .p3 {
+    top: 152px; left: 40px;
+    transform: rotate(-3deg);
+    z-index: 3;
+  }
+  .p3 .photo {
+    background: linear-gradient(160deg, #6b5a4a 0%, #3a2f26 100%);
+    filter: grayscale(0.5) brightness(0.6);
+  }
+  .p3::after {
+    content: "🔒";
+    position: absolute;
+    top: 44%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    filter: grayscale(1) opacity(0.85);
+  }
+  .p3 .cap { color: #cbb89a; }
+
+  /* grain overlay on each photo */
+  .photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- PROBLEM ---------- */
+  .problem-body {
+    max-width: 56ch;
+  }
+  .problem-body p { font-size: 1.05rem; }
+
+  /* ---------- CONCEPT ---------- */
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 40px;
+    margin-top: 8px;
+  }
+  .concept-card p {
+    font-size: 1.08rem;
+    color: var(--ink);
+  }
+  .concept-card strong { color: var(--brand-deep); font-weight: 600; }
+
+  /* story bar mini illustration */
+  .storybar {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px dashed var(--line);
+  }
+  .storybar .tile {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .storybar .tile.locked {
+    filter: grayscale(1) brightness(0.75);
+  }
+  .storybar .tile.locked::after {
+    content: "🔒";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .t1 { background: linear-gradient(140deg, #E7A857, #A5711F); }
+  .t2 { background: linear-gradient(140deg, #9FB9A8, #5F7F6C); }
+  .t3 { background: linear-gradient(140deg, #D68B7C, #8B4B3D); }
+  .t4 { background: linear-gradient(140deg, #C2B280, #7A6B45); }
+  .t5 { background: linear-gradient(140deg, #6b5a4a, #35473C); }
+
+  .storybar-label {
+    font-family: var(--font-stamp);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
+  }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-top: 36px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .step .num {
+    font-family: var(--font-stamp);
+    font-size: 13px;
+    color: var(--red);
+    border: 1px solid var(--line);
+    background: var(--cream-paper);
+    border-radius: 6px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step h3 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.02rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .step p { font-size: 0.98rem; }
+
+  /* ---------- SURVEY ---------- */
+  .survey-intro { max-width: 52ch; }
+  .survey-card {
+    margin-top: 32px;
+    background: var(--cream-paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 4px 18px rgba(51, 38, 26, 0.06);
+  }
+  .survey-note {
+    font-family: var(--font-stamp);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 16px;
+    line-height: 1.55;
+  }
+
+  /* placeholder box shown until the real Tally embed is pasted in */
+  .embed-placeholder {
+    border: 1px dashed var(--brand);
+    border-radius: 8px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: var(--font-stamp);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    padding: 40px 0 56px;
+  }
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer p {
+    font-family: var(--font-stamp);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* ---------- SCROLL REVEAL ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- FOCUS STATES ---------- */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--brand-deep);
+    outline-offset: 3px;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 760px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 56px;
+    }
+    .stack {
+      height: 300px;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+    section { padding: 64px 0; }
+    .concept-card { padding: 28px 22px; }
+    .storybar { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <span class="wordmark">Pictury<span class="dot">.</span></span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>A photo diary you build <em>with</em> your friends, one day at a time.</h1>
+      <p class="sub">Not a story that vanishes in 24 hours. Not another feed to perform for. Just what actually happened — saved for good.</p>
+    </div>
+    <div class="stack reveal">
+      <div class="polaroid p1">
+        <div class="photo"></div>
+        <span class="cap">SAT</span>
+        <span class="stamp">08.01</span>
+      </div>
+      <div class="polaroid p2">
+        <div class="photo"></div>
+        <span class="cap">SUN</span>
+        <span class="stamp">08.02</span>
+      </div>
+      <div class="polaroid p3">
+        <div class="photo"></div>
+        <span class="cap">TODAY</span>
+        <span class="stamp">08.03</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="problem">
+  <div class="wrap">
+    <p class="eyebrow">SOUND FAMILIAR?</p>
+    <h2>The best group chats are already scrapbooks. They just don't know it yet.</h2>
+    <div class="problem-body reveal" style="margin-top: 20px;">
+      <p>Somewhere in a group chat with your closest friends, there are years of photos nobody can find again. Snapchat throws them away on purpose. Instagram wants them polished for strangers. The group chat buries them under a thousand other messages by next week.</p>
+      <p>None of it was ever built to become something you'd actually look back on.</p>
+    </div>
+  </div>
+</section>
+
+<section class="concept">
+  <div class="wrap">
+    <p class="eyebrow">THE CONCEPT</p>
+    <h2>Here's the idea.</h2>
+    <div class="concept-card reveal">
+      <p>You create private groups with friends (from your contacts or an invite link). Inside a group, anyone can start a <strong>"stream"</strong> for the day — a shared, story-style collection of photos that friends add to throughout the day.</p>
+      <p>Unlike Snapchat, <strong>nothing disappears</strong>: streams are saved permanently, building up into a shared photo diary over time. Streams are automatically named by date but can be relabeled — <em>"Saturday night hang."</em></p>
+      <p>One idea we're considering: you can only see what your friends posted that day once you've posted something yourself — otherwise you'd see it the next day.</p>
+
+      <div class="storybar">
+        <div class="tile t1"></div>
+        <div class="tile t2"></div>
+        <div class="tile t3"></div>
+        <div class="tile t4"></div>
+        <div class="tile locked t5"></div>
+        <span class="storybar-label">← today, once you post</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <p class="eyebrow">HOW IT WORKS</p>
+    <h2>Three things happen. That's it.</h2>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="num">01</div>
+        <div>
+          <h3>Start a group with people you actually know</h3>
+          <p>From your contacts, or a link you send yourself. No public profiles, no strangers.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">02</div>
+        <div>
+          <h3>Someone opens today's stream</h3>
+          <p>Could be a lazy Tuesday or a Saturday night — whoever's around kicks it off.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">03</div>
+        <div>
+          <h3>Everyone adds their day, whenever they want</h3>
+          <p>No pressure to post. Nothing gets deleted. It just becomes part of the record.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="survey">
+  <div class="wrap">
+    <p class="eyebrow">TWO MINUTES</p>
+    <h2>Would you actually use this?</h2>
+    <div class="survey-intro reveal" style="margin-top: 16px;">
+      <p>9 quick questions — tell us honestly, including the parts that bother you. It genuinely shapes whether and how we build this.</p>
+    </div>
+
+    <div class="survey-card reveal">
+      <iframe data-tally-src="https://tally.so/embed/dWoNxD?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="5223" frameborder="0" marginheight="0" marginwidth="0" title="Validation of app idea"></iframe>
+      <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}</script>
+    </div>
+
+    <p class="survey-note">Your answers help us decide whether to build this. If you leave your email at the end, we'll only use it to follow up about early access — nothing else.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>2026</p>
+  </div>
+</footer>
+
+<script>
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
