@@ -353,17 +353,24 @@
     margin-top: 16px;
     line-height: 1.55;
   }
-
-  /* placeholder box shown until the real Tally embed is pasted in */
-  .embed-placeholder {
-    border: 1px dashed var(--brand);
+  /* survey link-out button */
+  .survey-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--brand);
+    color: var(--cream-paper);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.02rem;
+    text-decoration: none;
+    padding: 16px 28px;
     border-radius: 8px;
-    padding: 48px 24px;
-    text-align: center;
-    color: var(--ink-soft);
-    font-family: var(--font-stamp);
-    font-size: 13px;
-    line-height: 1.7;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .survey-button:hover {
+    background: var(--brand-deep);
+    transform: translateY(-1px);
   }
 
   /* ---------- FOOTER ---------- */
